@@ -173,7 +173,8 @@ export default {
             .setEmoji("📩")
         );
 
-        await interaction.channel!.send({ embeds: [embed], components: [row] });
+        if (!interaction.channel || !('send' in interaction.channel)) return;
+        await interaction.channel.send({ embeds: [embed], components: [row] });
 
         return interaction.reply({
           embeds: [successEmbed("Panel Created", "Ticket panel has been created.")],

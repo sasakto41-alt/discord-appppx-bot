@@ -82,7 +82,8 @@ export default {
             .setEmoji("🎉")
         );
 
-        const msg = await interaction.channel!.send({
+        if (!interaction.channel || !('send' in interaction.channel)) return;
+        const msg = await interaction.channel.send({
           embeds: [embed],
           components: [row],
         });
@@ -130,7 +131,8 @@ export default {
           ? winnerIds.map((id) => `<@${id}>`).join(", ")
           : "No entries";
 
-        await interaction.channel!.send({
+        if (!interaction.channel || !('send' in interaction.channel)) return;
+        await interaction.channel.send({
           embeds: [
             new EmbedBuilder()
               .setColor(Colors.economy)

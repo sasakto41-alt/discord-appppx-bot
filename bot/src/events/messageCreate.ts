@@ -29,16 +29,18 @@ export default {
         const member = message.member;
         if (member && !member.permissions.has("ManageMessages")) {
           await message.delete().catch(() => {});
-          await message.channel
-            .send({
-              embeds: [
-                new EmbedBuilder()
-                  .setColor(Colors.danger)
-                  .setDescription(`${message.author}, links are not allowed here!`)
-                  .setTimestamp(),
-              ],
-            })
-            .then((m) => setTimeout(() => m.delete().catch(() => {}), 5000));
+          if ('send' in message.channel) {
+            await message.channel
+              .send({
+                embeds: [
+                  new EmbedBuilder()
+                    .setColor(Colors.danger)
+                    .setDescription(`${message.author}, links are not allowed here!`)
+                    .setTimestamp(),
+                ],
+              })
+              .then((m: { delete: () => Promise<unknown> }) => setTimeout(() => m.delete().catch(() => {}), 5000));
+          }
           return;
         }
       }
@@ -75,14 +77,16 @@ async function checkSpam(
     if (member && !member.permissions.has("ManageMessages")) {
       try {
         await member.timeout(60000, "Anti-Spam: Message spam detected");
-        await message.channel.send({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(Colors.danger)
-              .setDescription(`${message.author} has been muted for 1 minute (spam detected).`)
-              .setTimestamp(),
-          ],
-        });
+        if ('send' in message.channel) {
+          await message.channel.send({
+            embeds: [
+              new EmbedBuilder()
+                .setColor(Colors.danger)
+                .setDescription(`${message.author} has been muted for 1 minute (spam detected).`)
+                .setTimestamp(),
+            ],
+          });
+        }
 
         await client.db.modLog.create({
           data: {
@@ -153,6 +157,8 @@ async function handleXp(message: Message, client: BotClient) {
       })
       .setTimestamp();
 
-    await message.channel.send({ embeds: [embed] });
+    if ('send' in message.channel) {
+      await message.channel.send({ embeds: [embed] });
+    }
   }
 }

@@ -63,7 +63,7 @@ export class BotClient extends Client {
         const commandModule = await import(join(categoryPath, file));
         const command: Command = commandModule.default ?? commandModule;
 
-        if (command.data && command.execute) {
+        if (command.data && typeof command.execute === 'function') {
           this.commands.set(command.data.name, command);
           console.log(`[CMD] Loaded: ${command.data.name}`);
         }
