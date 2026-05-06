@@ -1,5 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+/**
+ * Legacy callback handler for the custom JWT flow from the Express API.
+ * The Express API redirects here after completing Discord OAuth2 with a signed JWT.
+ * Example: /api/auth/callback?token=<jwt>
+ */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const token = searchParams.get("token");
