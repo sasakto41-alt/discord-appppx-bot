@@ -1,0 +1,26 @@
+{
+  "name": "discord-bot-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Professional Discord Bot with Web Dashboard",
+  "scripts": {
+    "dev:bot": "cd bot && npm run dev",
+    "dev:api": "cd api && npm run dev",
+    "dev:dashboard": "cd dashboard && npm run dev",
+    "build:bot": "cd bot && npm run build",
+    "build:api": "cd api && npm run build",
+    "build:dashboard": "cd dashboard && npm run build",
+    "build": "npm run build:bot && npm run build:api && npm run build:dashboard",
+    "start:bot": "cd bot && npm start",
+    "start:api": "cd api && npm start",
+    "start:dashboard": "cd dashboard && npm start",
+    "db:generate": "npx prisma generate",
+    "db:push": "npx prisma db push",
+    "db:studio": "npx prisma studio",
+    "lint": "cd bot && npm run lint && cd ../api && npm run lint && cd ../dashboard && npm run lint"
+  },
+  "dependencies": {
+    "prisma": "^5.22.0",
+    "@prisma/client": "^5.22.0"
+  }
+}
