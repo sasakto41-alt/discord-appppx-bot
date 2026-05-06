@@ -27,6 +27,7 @@ interface GuildSettings {
   warnAction: string;
   spamThreshold: number;
   raidThreshold: number;
+  captchaType: string;
   [key: string]: unknown;
 }
 
