@@ -9,7 +9,7 @@ router.use(authenticate);
 router.get("/:guildId", async (req: AuthRequest, res: Response) => {
   try {
     const db: PrismaClient = req.app.get("db");
-    const { guildId } = req.params;
+    const guildId = req.params.guildId as string;
 
     const [
       totalMembers,

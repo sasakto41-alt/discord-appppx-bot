@@ -9,7 +9,7 @@ router.use(authenticate);
 router.get("/:guildId", async (req: AuthRequest, res: Response) => {
   try {
     const db: PrismaClient = req.app.get("db");
-    const { guildId } = req.params;
+    const guildId = req.params.guildId as string;
 
     const settings = await db.guildSettings.findUnique({
       where: { guildId },
@@ -30,7 +30,7 @@ router.get("/:guildId", async (req: AuthRequest, res: Response) => {
 router.patch("/:guildId", async (req: AuthRequest, res: Response) => {
   try {
     const db: PrismaClient = req.app.get("db");
-    const { guildId } = req.params;
+    const guildId = req.params.guildId as string;
     const updates = req.body;
 
     // Validate allowed fields
@@ -70,7 +70,7 @@ router.get("/:guildId/welcome", async (req: AuthRequest, res: Response) => {
   try {
     const db: PrismaClient = req.app.get("db");
     const config = await db.welcomeConfig.findUnique({
-      where: { guildId: req.params.guildId },
+      where: { guildId: req.params.guildId as string },
     });
     res.json(config ?? {});
   } catch (error) {
@@ -82,7 +82,7 @@ router.get("/:guildId/welcome", async (req: AuthRequest, res: Response) => {
 router.patch("/:guildId/welcome", async (req: AuthRequest, res: Response) => {
   try {
     const db: PrismaClient = req.app.get("db");
-    const { guildId } = req.params;
+    const guildId = req.params.guildId as string;
 
     const config = await db.welcomeConfig.upsert({
       where: { guildId },
@@ -101,7 +101,7 @@ router.get("/:guildId/logs-config", async (req: AuthRequest, res: Response) => {
   try {
     const db: PrismaClient = req.app.get("db");
     const config = await db.logConfig.findUnique({
-      where: { guildId: req.params.guildId },
+      where: { guildId: req.params.guildId as string },
     });
     res.json(config ?? {});
   } catch (error) {
@@ -113,7 +113,7 @@ router.get("/:guildId/logs-config", async (req: AuthRequest, res: Response) => {
 router.patch("/:guildId/logs-config", async (req: AuthRequest, res: Response) => {
   try {
     const db: PrismaClient = req.app.get("db");
-    const { guildId } = req.params;
+    const guildId = req.params.guildId as string;
 
     const config = await db.logConfig.upsert({
       where: { guildId },

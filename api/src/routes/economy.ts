@@ -9,7 +9,7 @@ router.use(authenticate);
 router.get("/:guildId/leaderboard", async (req: AuthRequest, res: Response) => {
   try {
     const db: PrismaClient = req.app.get("db");
-    const { guildId } = req.params;
+    const guildId = req.params.guildId as string;
     const type = req.query.type as string || "economy";
     const limit = parseInt(req.query.limit as string) || 10;
 
@@ -37,7 +37,8 @@ router.get("/:guildId/leaderboard", async (req: AuthRequest, res: Response) => {
 router.get("/:guildId/user/:userId", async (req: AuthRequest, res: Response) => {
   try {
     const db: PrismaClient = req.app.get("db");
-    const { guildId, userId } = req.params;
+    const guildId = req.params.guildId as string;
+    const userId = req.params.userId as string;
 
     const [economy, level] = await Promise.all([
       db.userEconomy.findUnique({

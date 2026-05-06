@@ -9,7 +9,7 @@ router.use(authenticate);
 router.get("/:guildId/logs", async (req: AuthRequest, res: Response) => {
   try {
     const db: PrismaClient = req.app.get("db");
-    const { guildId } = req.params;
+    const guildId = req.params.guildId as string;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
 
@@ -33,7 +33,7 @@ router.get("/:guildId/logs", async (req: AuthRequest, res: Response) => {
 router.get("/:guildId/warns", async (req: AuthRequest, res: Response) => {
   try {
     const db: PrismaClient = req.app.get("db");
-    const { guildId } = req.params;
+    const guildId = req.params.guildId as string;
 
     const warns = await db.warn.findMany({
       where: { guildId, active: true },
@@ -52,7 +52,7 @@ router.delete("/:guildId/warns/:warnId", async (req: AuthRequest, res: Response)
     const db: PrismaClient = req.app.get("db");
 
     await db.warn.update({
-      where: { id: req.params.warnId },
+      where: { id: req.params.warnId as string },
       data: { active: false },
     });
 
@@ -66,7 +66,7 @@ router.delete("/:guildId/warns/:warnId", async (req: AuthRequest, res: Response)
 router.get("/:guildId/tickets", async (req: AuthRequest, res: Response) => {
   try {
     const db: PrismaClient = req.app.get("db");
-    const { guildId } = req.params;
+    const guildId = req.params.guildId as string;
     const status = req.query.status as string;
 
     const tickets = await db.ticket.findMany({

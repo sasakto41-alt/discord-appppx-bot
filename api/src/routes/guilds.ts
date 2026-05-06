@@ -45,7 +45,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 router.get("/:guildId", async (req: AuthRequest, res: Response) => {
   try {
     const db: PrismaClient = req.app.get("db");
-    const { guildId } = req.params;
+    const guildId = req.params.guildId as string;
 
     const guild = await db.guild.findUnique({
       where: { id: guildId },
