@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";
 import { ThemeProvider } from "@/providers/ThemeProvider";
-import { Toaster } from "react-hot-toast";
+import dynamic from "next/dynamic";
+
+const Toaster = dynamic(
+  () => import("react-hot-toast").then((mod) => mod.Toaster),
+  { ssr: false }
+);
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
@@ -17,8 +22,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+    <html lang="ru" suppressHydrationWarning>
+      <body className={inter.className} suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {children}
           <Toaster
