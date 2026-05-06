@@ -6,6 +6,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import { PrismaClient } from "@prisma/client";
+import { MongoClient } from "mongodb";
 import authRoutes from "./routes/auth";
 import guildRoutes from "./routes/guilds";
 import settingsRoutes from "./routes/settings";
@@ -17,6 +18,27 @@ import statsRoutes from "./routes/stats";
 const app = express();
 const db = new PrismaClient();
 const PORT = process.env.API_PORT || 3001;
+
+async function initReplicaSet() {
+  const dbUrl = process.env.DATABASE_URL;
+  if (!dbUrl) return;
+  try {
+    const client = new MongoClient(dbUrl.replace('?directConnection=true', '').replace('&directConnection=true', ''), { directConnection: true });
+    await client.connect();
+    const admin = client.db('admin');
+    try {
+      await admin.command({ replSetGetStatus: 1 });
+    } catch {
+      console.log('[DB] Initializing replica set...');
+      await admin.command({ replSetInitiate: { _id: 'rs0', members: [{ _id: 0, host: 'localhost:27017' }] } });
+      await new Promise(r => setTimeout(r, 3000));
+    }
+    await client.close();
+  } catch (e) {
+    console.log('[DB] Replica set init skipped:', (e as Error).message);
+  }
+}
+initReplicaSet();
 
 // Middleware
 app.use(helmet());

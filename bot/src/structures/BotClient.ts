@@ -9,6 +9,7 @@ import {
   type SlashCommandBuilder,
 } from "discord.js";
 import { PrismaClient } from "@prisma/client";
+import { MongoClient } from "mongodb";
 import { readdirSync } from "fs";
 import { join } from "path";
 
@@ -104,7 +105,30 @@ export class BotClient extends Client {
     console.log("[API] Commands deployed successfully!");
   }
 
+  async initReplicaSet(): Promise<void> {
+    const dbUrl = process.env.DATABASE_URL;
+    if (!dbUrl) return;
+    try {
+      const client = new MongoClient(dbUrl.replace('?directConnection=true', '').replace('&directConnection=true', ''), { directConnection: true });
+      await client.connect();
+      const admin = client.db('admin');
+      try {
+        const status = await admin.command({ replSetGetStatus: 1 });
+        console.log('[DB] Replica set already initialized:', status.set);
+      } catch {
+        console.log('[DB] Initializing replica set...');
+        await admin.command({ replSetInitiate: { _id: 'rs0', members: [{ _id: 0, host: 'localhost:27017' }] } });
+        console.log('[DB] Replica set initialized');
+        await new Promise(r => setTimeout(r, 3000));
+      }
+      await client.close();
+    } catch (e) {
+      console.log('[DB] Replica set init skipped:', (e as Error).message);
+    }
+  }
+
   async start(token: string): Promise<void> {
+    await this.initReplicaSet();
     await this.db.$connect();
     console.log("[DB] Connected to database");
 
