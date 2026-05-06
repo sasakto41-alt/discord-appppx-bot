@@ -2,9 +2,20 @@
 
 import { motion } from "framer-motion";
 import { Bot, Shield, Sparkles } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+
+const ERROR_MESSAGES: Record<string, string> = {
+  missing_code: "Авторизация отменена. Попробуйте снова.",
+  token_exchange: "Ошибка обмена токена. Попробуйте снова.",
+  user_fetch: "Не удалось получить данные пользователя.",
+  server_error: "Внутренняя ошибка сервера. Попробуйте позже.",
+  OAuthCallback: "Ошибка OAuth2. Проверьте настройки приложения.",
+};
 
 export default function LoginPage() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  const searchParams = useSearchParams();
+  const errorCode = searchParams.get("error");
+  const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? "Произошла ошибка при входе.") : null;
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
@@ -32,7 +43,14 @@ export default function LoginPage() {
           Войдите через Discord для управления серверами
         </p>
 
-        <a href={`${apiUrl}/api/auth/login`}>
+        {errorMessage && (
+          <div className="mb-6 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            {errorMessage}
+          </div>
+        )}
+
+        {/* Primary: Next.js-native Discord OAuth2 (no external API required) */}
+        <a href="/api/auth/signin">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}

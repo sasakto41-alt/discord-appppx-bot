@@ -133,4 +133,60 @@ router.post("/logout", (_req: Request, res: Response) => {
   res.json({ success: true });
 });
 
+/**
+ * Sync endpoint called by the Next.js dashboard after completing Discord OAuth2.
+ * Upserts the user record in the database so guild-specific features work correctly.
+ */
+router.post("/sync", async (req: Request, res: Response) => {
+  const { user: userData, guilds: guildsData, accessToken, refreshToken } = req.body as {
+    user: {
+      id: string;
+      username: string;
+      discriminator: string;
+      avatar: string | null;
+      email: string;
+    };
+    guilds: unknown[];
+    accessToken: string;
+    refreshToken: string;
+  };
+
+  if (!userData?.id) {
+    res.status(400).json({ error: "Missing user data" });
+    return;
+  }
+
+  try {
+    const db: PrismaClient = req.app.get("db");
+
+    await db.user.upsert({
+      where: { id: userData.id },
+      update: {
+        username: userData.username,
+        discriminator: userData.discriminator,
+        avatar: userData.avatar,
+        email: userData.email,
+        accessToken,
+        refreshToken,
+        guilds: Array.isArray(guildsData) ? guildsData : [],
+      },
+      create: {
+        id: userData.id,
+        username: userData.username,
+        discriminator: userData.discriminator,
+        avatar: userData.avatar ?? "",
+        email: userData.email,
+        accessToken,
+        refreshToken,
+        guilds: Array.isArray(guildsData) ? guildsData : [],
+      },
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("[AUTH] Sync error:", error);
+    res.status(500).json({ error: "Sync failed" });
+  }
+});
+
 export default router;
