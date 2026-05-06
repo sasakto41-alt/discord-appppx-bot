@@ -30,7 +30,6 @@ export default {
       sub
         .setName("panel")
         .setDescription("Create a ticket panel")
-        .setDefaultMemberPermissions(undefined)
     ),
 
   async execute(interaction: ChatInputCommandInteraction, client: BotClient) {
