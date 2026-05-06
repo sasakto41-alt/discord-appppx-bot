@@ -1,0 +1,347 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ══════════════════════════════════
+// Guild Configuration
+// ══════════════════════════════════
+
+model Guild {
+  id        String   @id @map("_id")
+  name      String
+  icon      String?
+  ownerId   String
+  locale    String   @default("en")
+  premium   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  settings     GuildSettings?
+  modLogs      ModLog[]
+  warns        Warn[]
+  tickets      Ticket[]
+  giveaways    Giveaway[]
+  backups      Backup[]
+  customCmds   CustomCommand[]
+  reactionRoles ReactionRole[]
+  autoVoice    AutoVoice[]
+  economy      UserEconomy[]
+  levels       UserLevel[]
+  tempActions  TempAction[]
+  welcomeConfig WelcomeConfig?
+  logConfig    LogConfig?
+}
+
+model GuildSettings {
+  id      String @id @map("_id")
+  guildId String @unique
+  guild   Guild  @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  // Moderation
+  modEnabled      Boolean @default(true)
+  autoModEnabled  Boolean @default(false)
+  antiRaidEnabled Boolean @default(false)
+  antiSpamEnabled Boolean @default(false)
+  antiLinkEnabled Boolean @default(false)
+  antiNsfwEnabled Boolean @default(false)
+  antiBotEnabled  Boolean @default(false)
+
+  // Channels
+  modLogChannel     String?
+  welcomeChannel    String?
+  goodbyeChannel    String?
+  ticketCategory    String?
+  logChannel        String?
+  voiceLogChannel   String?
+  suggestChannel    String?
+  starboardChannel  String?
+
+  // Roles
+  muteRole    String?
+  jailRole    String?
+  autoRole    String[]
+  verifyRole  String?
+  modRoles    String[]
+  adminRoles  String[]
+
+  // Features
+  verifyEnabled   Boolean @default(false)
+  ticketEnabled   Boolean @default(false)
+  economyEnabled  Boolean @default(false)
+  levelsEnabled   Boolean @default(false)
+  musicEnabled    Boolean @default(false)
+  aiEnabled       Boolean @default(false)
+
+  // Limits
+  spamThreshold   Int @default(5)
+  raidThreshold   Int @default(10)
+  warnLimit       Int @default(3)
+  warnAction      String @default("mute")
+
+  // Captcha
+  captchaEnabled  Boolean @default(false)
+  captchaType     String  @default("button")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ══════════════════════════════════
+// Welcome / Goodbye
+// ══════════════════════════════════
+
+model WelcomeConfig {
+  id      String @id @map("_id")
+  guildId String @unique
+  guild   Guild  @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  welcomeEnabled Boolean @default(false)
+  welcomeMessage String  @default("Welcome {user} to {server}!")
+  welcomeEmbed   Json?
+  welcomeDm      Boolean @default(false)
+
+  goodbyeEnabled Boolean @default(false)
+  goodbyeMessage String  @default("Goodbye {user}!")
+  goodbyeEmbed   Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ══════════════════════════════════
+// Logging
+// ══════════════════════════════════
+
+model LogConfig {
+  id      String @id @map("_id")
+  guildId String @unique
+  guild   Guild  @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  messageLog Boolean @default(true)
+  voiceLog   Boolean @default(true)
+  memberLog  Boolean @default(true)
+  roleLog    Boolean @default(true)
+  channelLog Boolean @default(true)
+  inviteLog  Boolean @default(true)
+  boostLog   Boolean @default(true)
+  modLog     Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ══════════════════════════════════
+// Moderation
+// ══════════════════════════════════
+
+model ModLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  guildId   String
+  guild     Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId    String
+  modId     String
+  action    String
+  reason    String?
+  duration  Int?
+  createdAt DateTime @default(now())
+}
+
+model Warn {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  guildId   String
+  guild     Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId    String
+  modId     String
+  reason    String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model TempAction {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  guildId   String
+  guild     Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId    String
+  action    String
+  expiresAt DateTime
+  data      Json?
+  createdAt DateTime @default(now())
+}
+
+// ══════════════════════════════════
+// Tickets
+// ══════════════════════════════════
+
+model Ticket {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  guildId   String
+  guild     Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  channelId String
+  userId    String
+  subject   String?
+  status    String   @default("open")
+  messages  TicketMessage[]
+  createdAt DateTime @default(now())
+  closedAt  DateTime?
+}
+
+model TicketMessage {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  ticketId String @db.ObjectId
+  ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId   String
+  content  String
+  createdAt DateTime @default(now())
+}
+
+// ══════════════════════════════════
+// Economy
+// ══════════════════════════════════
+
+model UserEconomy {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  guildId   String
+  guild     Guild  @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId    String
+  balance   Int    @default(0)
+  bank      Int    @default(0)
+  lastDaily DateTime?
+  streak    Int    @default(0)
+  items     Json[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([guildId, userId])
+}
+
+// ══════════════════════════════════
+// Levels
+// ══════════════════════════════════
+
+model UserLevel {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  guildId   String
+  guild     Guild  @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId    String
+  xp        Int    @default(0)
+  level     Int    @default(0)
+  messages  Int    @default(0)
+  voiceTime Int    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([guildId, userId])
+}
+
+// ══════════════════════════════════
+// Giveaways
+// ══════════════════════════════════
+
+model Giveaway {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  guildId     String
+  guild       Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  channelId   String
+  messageId   String
+  hostId      String
+  prize       String
+  winners     Int      @default(1)
+  entries     String[]
+  endsAt      DateTime
+  ended       Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+// ══════════════════════════════════
+// Backups
+// ══════════════════════════════════
+
+model Backup {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  guildId   String
+  guild     Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId    String
+  data      Json
+  name      String?
+  createdAt DateTime @default(now())
+}
+
+// ══════════════════════════════════
+// Custom Commands
+// ══════════════════════════════════
+
+model CustomCommand {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  guildId   String
+  guild     Guild  @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  name      String
+  response  String
+  embed     Json?
+  enabled   Boolean @default(true)
+  createdAt DateTime @default(now())
+
+  @@unique([guildId, name])
+}
+
+// ══════════════════════════════════
+// Reaction Roles
+// ══════════════════════════════════
+
+model ReactionRole {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  guildId   String
+  guild     Guild  @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  channelId String
+  messageId String
+  type      String @default("reaction")
+  roles     Json[]
+  createdAt DateTime @default(now())
+}
+
+// ══════════════════════════════════
+// Auto Voice
+// ══════════════════════════════════
+
+model AutoVoice {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  guildId   String
+  guild     Guild  @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  channelId String
+  name      String @default("{user}'s Channel")
+  limit     Int    @default(0)
+  createdAt DateTime @default(now())
+}
+
+// ══════════════════════════════════
+// Users (Dashboard)
+// ══════════════════════════════════
+
+model User {
+  id            String   @id @map("_id")
+  username      String
+  discriminator String?
+  avatar        String?
+  email         String?
+  accessToken   String?
+  refreshToken  String?
+  guilds        Json[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ══════════════════════════════════
+// Sessions
+// ══════════════════════════════════
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+}
